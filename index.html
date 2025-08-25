@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>文字貪食蛇｜MVP v0.1</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            background: #0a0;
+            font-family: "LINE Seed TW_OTF Bold", "LINE Seed TW_OTF", "LINE Seed TW_OTF Regular", "LINE Seed TW_OTF ExtraBold", "LINE Seed TW OTF Bold", "LINESeedTW-Bold", "LINE Seed TW Bold", "LINE Seed TW", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", system-ui, -apple-system, sans-serif
+        }
+
+        #hud {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            padding: 6px 0;
+            color: #012;
+            mix-blend-mode: soft-light
+        }
+
+        #pad {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 6px;
+            display: flex;
+            gap: 8px;
+            justify-content: center
+        }
+
+        #pad button {
+            font-size: 18px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: none;
+            background: #013;
+            color: #9ef
+        }
+
+        canvas {
+            display: block;
+            margin: 40px auto 88px auto;
+            box-shadow: 0 0 0 2px #013 inset
+        }
+
+        #over {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .6);
+            display: none;
+            align-items: center;
+            justify-content: center
+        }
+
+        #card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 18px 16px;
+            width: min(92%, 420px)
+        }
+
+        #card h2 {
+            margin: 0 0 8px 0
+        }
+
+        #list {
+            font-size: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px
+        }
+
+        .chip {
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #eef
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 480px) {
+            #hud {
+                font-size: 16px;
+                gap: 8px;
+                padding: 8px 0;
+            }
+
+            #pad button {
+                font-size: 20px;
+                padding: 12px 16px;
+                border-radius: 12px;
+            }
+
+            canvas {
+                margin: 50px auto 100px auto;
+            }
+
+            #list {
+                font-size: 20px;
+                gap: 10px;
+            }
+
+            .chip {
+                padding: 6px 10px;
+                font-size: 16px;
+            }
+
+            #card {
+                padding: 20px 18px;
+            }
+
+            #card h2 {
+                font-size: 22px;
+                margin: 0 0 12px 0;
+            }
+        }
+
+        @media (min-width: 481px) and (max-width: 768px) {
+            #hud {
+                font-size: 15px;
+            }
+
+            #pad button {
+                font-size: 19px;
+                padding: 11px 15px;
+            }
+
+            #list {
+                font-size: 19px;
+            }
+
+            .chip {
+                padding: 5px 9px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            #hud {
+                font-size: 14px;
+            }
+
+            canvas {
+                margin: 40px auto 88px auto;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+    <script src="./items.js"></script>
+    <script src="./ending.js"></script>
+</head>
+
+<body>
+    <div id="hud"><span id="time">60</span>s｜長度 <span id="len">1</span>｜字體: <span id="font-info">檢測中...</span></div>
+    <div id="pad">
+        <button id="L">←</button><button id="U">↑</button>
+        <button id="D">↓</button><button id="R">→</button>
+    </div>
+    <div id="over">
+        <div id="card">
+            <h2>早餐小結</h2>
+            <div id="list"></div>
+            <p id="report" style="margin:12px 0 6px 0;color:#333"></p>
+            <button onclick="location.reload()">再玩一次</button>
+        </div>
+    </div>
+    <script src="./game.js"></script>
+</body>
+
+</html>
