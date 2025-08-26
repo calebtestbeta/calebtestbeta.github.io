@@ -8,6 +8,29 @@ let gameFont = 'sans-serif'; // 遊戲使用的字體
 let responsiveTextRatio = 0.7; // 響應式文字大小比例
 let gameState = 'START'; // 遊戲狀態: 'START', 'PLAYING', 'OVER'
 
+// 難度系統
+let difficulty = 'easy'; // 預設難度：簡單
+const DIFFICULTY_SETTINGS = {
+    easy: { 
+        name: '簡單', 
+        speedMultiplier: 0.7, 
+        description: '悠閒享受早餐時光',
+        color: '#4CAF50'
+    },
+    normal: { 
+        name: '普通', 
+        speedMultiplier: 1.0, 
+        description: '正常早餐節奏',
+        color: '#FF9800'
+    },
+    hard: { 
+        name: '困難', 
+        speedMultiplier: 1.4, 
+        description: '急忙趕早班的速度',
+        color: '#F44336'
+    }
+};
+
 function setup() {
     try {
         // 檢查必要的依賴
@@ -67,6 +90,9 @@ function setup() {
         } else {
             console.warn('找不到開始按鈕元素 #start-button');
         }
+
+        // 設置難度選擇器
+        setupDifficultySelector();
 
         // 實體鍵
         window.addEventListener('keydown', e => {
@@ -166,9 +192,10 @@ function draw() {
             if (timeElement) timeElement.html(timer);
             if (lenElement) lenElement.html(snake.length);
 
-            // 更新速度（效果中）
-            let curSpeed = speed;
-            if (millis() < effectUntil) curSpeed = speed * (window.currentMul || 1);
+            // 更新速度（結合難度與效果）
+            const baseSpeed = speed * DIFFICULTY_SETTINGS[difficulty].speedMultiplier;
+            let curSpeed = baseSpeed;
+            if (millis() < effectUntil) curSpeed = baseSpeed * (window.currentMul || 1);
             else if (postEffect) { applyMul(postEffect); postEffect = null; }
 
             // 以速度決定移動節奏
@@ -587,3 +614,32 @@ function adjustGameObjectsToNewGrid(oldCols, oldRows) {
 }
 
 function sel(q) { return select(q); }
+
+function setupDifficultySelector() {
+    // 獲取所有難度按鈕
+    const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+    
+    // 設定預設選中簡單難度
+    const defaultButton = document.querySelector('[data-difficulty="easy"]');
+    if (defaultButton) {
+        defaultButton.classList.add('selected');
+    }
+    
+    // 為每個按鈕添加點擊事件
+    difficultyButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // 移除所有按鈕的選中狀態
+            difficultyButtons.forEach(btn => btn.classList.remove('selected'));
+            
+            // 設定當前按鈕為選中狀態
+            button.classList.add('selected');
+            
+            // 更新難度設定
+            difficulty = button.getAttribute('data-difficulty');
+            
+            console.log(`難度已變更為: ${DIFFICULTY_SETTINGS[difficulty].name}`);
+        });
+    });
+    
+    console.log('難度選擇器初始化完成，預設難度：簡單');
+}
