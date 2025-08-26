@@ -25,7 +25,7 @@ function setup() {
 
         // 響應式 Canvas 大小
         const maxWidth = windowWidth <= 480 ? windowWidth - 20 : Math.min(windowWidth, 600);
-        const maxHeight = windowHeight <= 640 ? windowHeight - 120 : Math.min(windowHeight - 140, 700);
+        const maxHeight = windowHeight <= 640 ? windowHeight - 400 : Math.min(windowHeight - 140, 700);
         createCanvas(maxWidth, maxHeight);
         frameRate(16);
         cols = floor(width / cell); rows = floor(height / cell);
@@ -510,7 +510,7 @@ function windowResized() {
 
         // 重新調整 Canvas 大小
         const maxWidth = windowWidth <= 480 ? windowWidth - 20 : Math.min(windowWidth, 600);
-        const maxHeight = windowHeight <= 640 ? windowHeight - 120 : Math.min(windowHeight - 140, 700);
+        const maxHeight = windowHeight <= 640 ? windowHeight - 400 : Math.min(windowHeight - 140, 700);
         resizeCanvas(maxWidth, maxHeight);
 
         // 重新計算網格
