@@ -106,14 +106,35 @@ function startGame() {
         startScreen.style('display', 'none');
     }
 
-    // 設置遊戲狀態為正在遊戲
-    gameState = 'PLAYING';
-
-    // 重置遊戲並開始
-    resetGame();
-    loop();
-
-    console.log('遊戲開始！');
+    // 顯示倒數視窗
+    const countdownScreen = select('#countdown-screen');
+    const countdownNumber = select('#countdown-number');
+    if (countdownScreen && countdownNumber) {
+        countdownScreen.style('display', 'flex');
+        let count = 3;
+        countdownNumber.html(count);
+        let countdownInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countdownNumber.html(count);
+            } else {
+                clearInterval(countdownInterval);
+                countdownScreen.style('display', 'none');
+                // 設置遊戲狀態為正在遊戲
+                gameState = 'PLAYING';
+                // 重置遊戲並開始
+                resetGame();
+                loop();
+                console.log('遊戲開始！');
+            }
+        }, 1000);
+    } else {
+        // 若找不到倒數視窗則直接開始
+        gameState = 'PLAYING';
+        resetGame();
+        loop();
+        console.log('遊戲開始！');
+    }
 }
 
 function resetGame() {
@@ -342,7 +363,9 @@ function gameOver() {
         const b = document.createElement('span');
         b.className = 'chip'; b.textContent = ch; listEl.appendChild(b);
     });
-    document.getElementById('report').textContent = msg;
+    // 顯示吃到的字的總數
+    const totalChars = ate.length;
+    document.getElementById('report').textContent = msg + `\n\n本局共吃到 ${totalChars} 個字。`;
     document.getElementById('over').style.display = 'flex';
 }
 
