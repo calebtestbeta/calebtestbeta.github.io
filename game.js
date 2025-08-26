@@ -6,6 +6,7 @@ let foodChangeTimer = 0; // 食物變換計時器
 const FOOD_CHANGE_INTERVAL = 5000; // 五秒間隔（毫秒）
 let gameFont = 'sans-serif'; // 遊戲使用的字體
 let responsiveTextRatio = 0.7; // 響應式文字大小比例
+let gameState = 'START'; // 遊戲狀態: 'START', 'PLAYING', 'OVER'
 
 function setup() {
     try {
@@ -28,6 +29,7 @@ function setup() {
         createCanvas(maxWidth, maxHeight);
         frameRate(16);
         cols = floor(width / cell); rows = floor(height / cell);
+
 
         // 檢測並設置字體
         gameFont = detectAndSetFont();
@@ -58,18 +60,60 @@ function setup() {
         setupButton('#U', 'UP');
         setupButton('#D', 'DOWN');
 
+        // 設置開始遊戲按鈕
+        const startButton = select('#start-button');
+        if (startButton) {
+            startButton.mousePressed(startGame);
+        } else {
+            console.warn('找不到開始按鈕元素 #start-button');
+        }
+
         // 實體鍵
         window.addEventListener('keydown', e => {
-            if (e.key === 'ArrowLeft') turn('LEFT');
-            if (e.key === 'ArrowRight') turn('RIGHT');
-            if (e.key === 'ArrowUp') turn('UP');
-            if (e.key === 'ArrowDown') turn('DOWN');
+            if (gameState === 'PLAYING') {
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault(); // 阻止預設的頁面滾動行為
+                    turn('LEFT');
+                }
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    turn('RIGHT');
+                }
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    turn('UP');
+                }
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    turn('DOWN');
+                }
+            }
         });
+
+        // 遊戲開始時暫停，等待用戶點擊開始
+        noLoop();
 
         console.log('遊戲初始化完成');
     } catch (error) {
         console.error('遊戲初始化時發生錯誤:', error);
     }
+}
+
+function startGame() {
+    // 隱藏起始視窗
+    const startScreen = select('#start-screen');
+    if (startScreen) {
+        startScreen.style('display', 'none');
+    }
+
+    // 設置遊戲狀態為正在遊戲
+    gameState = 'PLAYING';
+
+    // 重置遊戲並開始
+    resetGame();
+    loop();
+
+    console.log('遊戲開始！');
 }
 
 function resetGame() {
@@ -88,29 +132,36 @@ function resetGame() {
 function draw() {
     try {
         background(10, 160, 10);
-        // 邊框
-        noFill(); stroke(0); rect(2, 2, width - 4, height - 4);
+        // 邊框 - 修正：讓邊框與實際遊戲區域對齊
+        noFill(); stroke(0); strokeWeight(2);
+        rect(0, 0, cols * cell, rows * cell);
 
-        // 倒數 & HUD - 添加安全檢查
-        if (frameCount % 16 === 0 && timer > 0) timer--;
-        const timeElement = select('#time');
-        const lenElement = select('#len');
-        if (timeElement) timeElement.html(timer);
-        if (lenElement) lenElement.html(snake.length);
+        // 只有在遊戲進行中才執行遊戲邏輯
+        if (gameState === 'PLAYING') {
+            // 倒數 & HUD - 添加安全檢查
+            if (frameCount % 16 === 0 && timer > 0) timer--;
+            const timeElement = select('#time');
+            const lenElement = select('#len');
+            if (timeElement) timeElement.html(timer);
+            if (lenElement) lenElement.html(snake.length);
 
-        // 更新速度（效果中）
-        let curSpeed = speed;
-        if (millis() < effectUntil) curSpeed = speed * (window.currentMul || 1);
-        else if (postEffect) { applyMul(postEffect); postEffect = null; }
+            // 更新速度（效果中）
+            let curSpeed = speed;
+            if (millis() < effectUntil) curSpeed = speed * (window.currentMul || 1);
+            else if (postEffect) { applyMul(postEffect); postEffect = null; }
 
-        // 以速度決定移動節奏
-        t += curSpeed / 16;
-        if (t >= 1) { t = 0; stepForward(); }
+            // 以速度決定移動節奏
+            t += curSpeed / 16;
+            if (t >= 1) { t = 0; stepForward(); }
 
-        // 檢查食物變換計時器
-        if (millis() - foodChangeTimer >= FOOD_CHANGE_INTERVAL) {
-            changeFoodRandomly();
-            foodChangeTimer = millis(); // 重置計時器
+            // 檢查食物變換計時器
+            if (millis() - foodChangeTimer >= FOOD_CHANGE_INTERVAL) {
+                changeFoodRandomly();
+                foodChangeTimer = millis(); // 重置計時器
+            }
+
+            // 結束
+            if (timer <= 0) return gameOver();
         }
 
         // 繪製食物
@@ -161,9 +212,6 @@ function draw() {
                 }
             });
         }
-
-        // 結束
-        if (timer <= 0) return gameOver();
     } catch (error) {
         console.error('繪製過程中發生錯誤:', error);
         // 確保遊戲不會因為繪製錯誤而停止
@@ -176,11 +224,16 @@ function stepForward() {
     if (dir === 'UP') head.y--; if (dir === 'DOWN') head.y++;
     if (dir === 'LEFT') head.x--; if (dir === 'RIGHT') head.x++;
 
-    // 撞牆
-    if (head.x < 0 || head.y < 0 || head.x >= cols || head.y >= rows) { gameOver(); return; }
+    if (head.x < 0 || head.y < 0 || head.x >= cols || head.y >= rows) {
+        gameOver();
+        return;
+    }
 
-    // 撞自己 (不包括尾巴，因為尾巴會被移除)
-    if (snake.slice(0, -1).some((s) => s.x === head.x && s.y === head.y)) { gameOver(); return; }
+    // 修正：撞自己檢測 - 只檢查蛇身部分（排除蛇頭）
+    if (snake.slice(1).some((s) => s.x === head.x && s.y === head.y)) {
+        gameOver();
+        return;
+    }
 
     snake.unshift(head);
 
@@ -267,6 +320,10 @@ function spawnFood() {
 }
 
 function turn(next) {
+    // 只有在遊戲進行中才允許轉向
+    if (gameState !== 'PLAYING') return;
+
+    // 防止反方向移動，無論蛇的長度
     if (next === 'UP' && dir !== 'DOWN') dir = 'UP';
     if (next === 'DOWN' && dir !== 'UP') dir = 'DOWN';
     if (next === 'LEFT' && dir !== 'RIGHT') dir = 'LEFT';

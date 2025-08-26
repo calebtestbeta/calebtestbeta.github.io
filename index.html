@@ -29,21 +29,74 @@
 
         #pad {
             position: fixed;
-            left: 0;
-            right: 0;
+            left: 50%;
             bottom: 6px;
-            display: flex;
-            gap: 8px;
-            justify-content: center
+            transform: translateX(-50%);
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 4px;
+            width: 180px;
+            height: 180px;
         }
 
         #pad button {
-            font-size: 18px;
-            padding: 10px 14px;
-            border-radius: 10px;
+            font-size: 24px;
+            border-radius: 50%;
             border: none;
             background: #013;
-            color: #9ef
+            color: #9ef;
+            touch-action: manipulation;
+            user-select: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        #pad button:active {
+            transform: scale(0.95);
+            background: #025;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 十字排列：上方按鈕 */
+        #U {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        /* 十字排列：左側按鈕 */
+        #L {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        /* 十字排列：右側按鈕 */
+        #R {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        /* 十字排列：下方按鈕 */
+        #D {
+            grid-column: 2;
+            grid-row: 3;
+        }
+
+        /* 中心圓點（裝飾用） */
+        #pad::before {
+            content: "⊙";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: #013;
+            font-size: 20px;
+            opacity: 0.3;
+            pointer-events: none;
         }
 
         canvas {
@@ -63,26 +116,168 @@
 
         #card {
             background: #fff;
-            border-radius: 14px;
-            padding: 18px 16px;
-            width: min(92%, 420px)
+            border-radius: 20px;
+            padding: 30px 25px;
+            width: min(90%, 480px);
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         #card h2 {
-            margin: 0 0 8px 0
+            margin: 0 0 20px 0;
+            font-size: 2.2em;
+            color: #013;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         #list {
             font-size: 18px;
             display: flex;
             flex-wrap: wrap;
-            gap: 8px
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #0a0;
         }
 
         .chip {
-            padding: 4px 8px;
+            padding: 6px 12px;
             border-radius: 999px;
-            background: #eef
+            background: linear-gradient(45deg, #0a0, #0c0);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(10, 170, 10, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .chip:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10, 170, 10, 0.4);
+        }
+
+        #report {
+            margin: 20px 0 30px 0;
+            color: #333;
+            font-size: 1.1em;
+            line-height: 1.5;
+            padding: 15px;
+            background: #f0f8f0;
+            border-radius: 10px;
+            border-left: 4px solid #0a0;
+        }
+
+        /* 美化再玩一次按鈕 */
+        #card button {
+            font-size: 1.3em;
+            padding: 15px 30px;
+            border-radius: 25px;
+            border: none;
+            background: linear-gradient(45deg, #0a0, #0c0);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(10, 170, 10, 0.3);
+            font-weight: bold;
+            font-family: inherit;
+        }
+
+        #card button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(10, 170, 10, 0.4);
+            background: linear-gradient(45deg, #0c0, #0e0);
+        }
+
+        #card button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(10, 170, 10, 0.3);
+        }
+
+        #card button::before {
+            content: "🔄 ";
+            margin-right: 8px;
+        }
+
+        /* 起始視窗樣式 */
+        #start-screen {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 170, 10, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        #start-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px 25px;
+            width: min(90%, 480px);
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        #start-card h1 {
+            margin: 0 0 5px 0;
+            font-size: 2.5em;
+            color: #013;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #start-card h2 {
+            margin: 0 0 25px 0;
+            font-size: 1.2em;
+            color: #0a0;
+            font-weight: normal;
+        }
+
+        #instructions {
+            text-align: left;
+            margin: 20px 0 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #0a0;
+        }
+
+        #instructions h3 {
+            margin: 0 0 15px 0;
+            color: #013;
+            text-align: center;
+        }
+
+        #instructions p {
+            margin: 8px 0;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        #start-button {
+            font-size: 1.3em;
+            padding: 15px 30px;
+            border-radius: 25px;
+            border: none;
+            background: linear-gradient(45deg, #0a0, #0c0);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(10, 170, 10, 0.3);
+            font-weight: bold;
+        }
+
+        #start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(10, 170, 10, 0.4);
+            background: linear-gradient(45deg, #0c0, #0e0);
+        }
+
+        #start-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(10, 170, 10, 0.3);
         }
 
         /* 響應式設計 */
@@ -93,14 +288,18 @@
                 padding: 8px 0;
             }
 
+            #pad {
+                width: 190px;
+                height: 190px;
+                bottom: 15px;
+            }
+
             #pad button {
-                font-size: 20px;
-                padding: 12px 16px;
-                border-radius: 12px;
+                font-size: 24px;
             }
 
             canvas {
-                margin: 50px auto 100px auto;
+                margin: 50px auto 140px auto;
             }
 
             #list {
@@ -113,13 +312,70 @@
                 font-size: 16px;
             }
 
+            /* 手機版結束視窗 */
             #card {
-                padding: 20px 18px;
+                padding: 25px 20px;
+                width: min(95%, 400px);
             }
 
             #card h2 {
-                font-size: 22px;
-                margin: 0 0 12px 0;
+                font-size: 1.8em;
+                margin: 0 0 15px 0;
+            }
+
+            #list {
+                padding: 15px;
+                margin: 15px 0 20px 0;
+                font-size: 16px;
+                gap: 8px;
+            }
+
+            .chip {
+                padding: 5px 10px;
+                font-size: 14px;
+            }
+
+            #report {
+                margin: 15px 0 25px 0;
+                padding: 12px;
+                font-size: 1em;
+            }
+
+            #card button {
+                font-size: 1.2em;
+                padding: 12px 25px;
+            }
+
+            /* 手機版起始視窗 */
+            #start-card {
+                padding: 25px 20px;
+                width: min(95%, 400px);
+            }
+
+            #start-card h1 {
+                font-size: 2.2em;
+            }
+
+            #start-card h2 {
+                font-size: 1.1em;
+            }
+
+            #instructions {
+                padding: 15px;
+                margin: 15px 0 25px 0;
+            }
+
+            #instructions h3 {
+                font-size: 1.1em;
+            }
+
+            #instructions p {
+                font-size: 0.95em;
+            }
+
+            #start-button {
+                font-size: 1.2em;
+                padding: 12px 25px;
             }
         }
 
@@ -128,9 +384,13 @@
                 font-size: 15px;
             }
 
+            #pad {
+                width: 190px;
+                height: 190px;
+            }
+
             #pad button {
-                font-size: 19px;
-                padding: 11px 15px;
+                font-size: 22px;
             }
 
             #list {
@@ -163,11 +423,26 @@
         <button id="L">←</button><button id="U">↑</button>
         <button id="D">↓</button><button id="R">→</button>
     </div>
+    <div id="start-screen">
+        <div id="start-card">
+            <h1>文字貪食蛇</h1>
+            <h2>早餐版</h2>
+            <div id="instructions">
+                <h3>🎮 操作方式</h3>
+                <p>• 使用方向鍵 ↑↓←→ 或點擊下方按鈕控制移動</p>
+                <p>• 收集早餐食物讓蛇變長</p>
+                <p>• 不同食物會影響移動速度</p>
+                <p>• 避免撞牆或撞到自己</p>
+                <p>• 在 60 秒內盡可能收集更多食物！</p>
+            </div>
+            <button id="start-button">🍳 開始遊戲</button>
+        </div>
+    </div>
     <div id="over">
         <div id="card">
             <h2>早餐小結</h2>
             <div id="list"></div>
-            <p id="report" style="margin:12px 0 6px 0;color:#333"></p>
+            <p id="report"></p>
             <button onclick="location.reload()">再玩一次</button>
         </div>
     </div>
