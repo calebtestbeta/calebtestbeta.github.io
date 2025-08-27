@@ -281,16 +281,56 @@ function initializeCanvas() {
 }
 
 function calculateOptimalCanvasSize() {
-    const availableWidth = windowWidth - (GAME_CONFIG.CANVAS_PADDING * 2);
-    const availableHeight = windowHeight - (windowHeight <= 640 ? 350 : 180);
+    // 檢測設備類型
+    const isMobile = windowWidth <= GAME_CONFIG.MOBILE_BREAKPOINT;
+    const isTablet = windowWidth > GAME_CONFIG.MOBILE_BREAKPOINT && windowWidth <= GAME_CONFIG.TABLET_BREAKPOINT;
+    const isDesktop = windowWidth > GAME_CONFIG.TABLET_BREAKPOINT;
+    
+    // 根據設備類型設定邊距和可用空間
+    let horizontalPadding, verticalReduction, maxCellSize, minCellSize;
+    
+    if (isMobile) {
+        // 手機：更小的邊距，更大的可用空間
+        horizontalPadding = 20;
+        verticalReduction = windowHeight <= 667 ? 280 : 320; // iPhone SE vs 標準手機
+        maxCellSize = 32;  // 增加手機最大cell大小
+        minCellSize = 12;  // 設定最小cell大小
+    } else if (isTablet) {
+        // 平板
+        horizontalPadding = 30;
+        verticalReduction = 200;
+        maxCellSize = 28;
+        minCellSize = 14;
+    } else {
+        // 桌面
+        horizontalPadding = GAME_CONFIG.CANVAS_PADDING;
+        verticalReduction = 180;
+        maxCellSize = 25;
+        minCellSize = 16;
+    }
+    
+    const availableWidth = windowWidth - (horizontalPadding * 2);
+    const availableHeight = windowHeight - verticalReduction;
     
     const cellSizeByWidth = Math.floor(availableWidth / GAME_CONFIG.GRID_COLS);
     const cellSizeByHeight = Math.floor(availableHeight / GAME_CONFIG.GRID_ROWS);
     
-    const optimalCellSize = Math.min(cellSizeByWidth, cellSizeByHeight, 20);
+    // 確保cell大小在合理範圍內
+    let optimalCellSize = Math.min(cellSizeByWidth, cellSizeByHeight);
+    optimalCellSize = Math.max(minCellSize, Math.min(maxCellSize, optimalCellSize));
     
     const canvasWidth = optimalCellSize * GAME_CONFIG.GRID_COLS;
     const canvasHeight = optimalCellSize * GAME_CONFIG.GRID_ROWS;
+    
+    const deviceType = isMobile ? 'Mobile' : isTablet ? 'Tablet' : 'Desktop';
+    console.log(`Canvas計算 - 設備：${deviceType}, 視窗：${windowWidth}x${windowHeight}, Cell：${optimalCellSize}px, Canvas：${canvasWidth}x${canvasHeight}px`);
+    
+    // 提供設備特定的優化建議
+    if (isMobile && optimalCellSize < 14) {
+        console.warn('⚠️  手機螢幕 cell 大小較小，建議檢查是否會影響遊戲體驗');
+    } else if (optimalCellSize > 30) {
+        console.info('ℹ️  大螢幕設備，cell 大小較大，遊戲顯示效果佳');
+    }
     
     return {
         width: canvasWidth,
@@ -459,6 +499,19 @@ function validateGameConfig() {
             console.error(`✗ 缺少配置: ${config}`);
         }
     });
+    
+    // 驗證響應式畫布配置
+    console.log('=== 響應式畫布配置驗證 ===');
+    const canvasSize = calculateOptimalCanvasSize();
+    console.log(`✓ 計算出的畫布大小: ${canvasSize.width}x${canvasSize.height}`);
+    console.log(`✓ Cell 大小: ${canvasSize.cellSize}px`);
+    console.log(`✓ 文字大小: ${getResponsiveTextSize()}px`);
+    
+    // 驗證設備檢測
+    const isMobile = windowWidth <= GAME_CONFIG.MOBILE_BREAKPOINT;
+    const isTablet = windowWidth > GAME_CONFIG.MOBILE_BREAKPOINT && windowWidth <= GAME_CONFIG.TABLET_BREAKPOINT;
+    const deviceType = isMobile ? 'Mobile' : isTablet ? 'Tablet' : 'Desktop';
+    console.log(`✓ 設備類型: ${deviceType} (視窗: ${windowWidth}x${windowHeight})`);
     
     console.log('=== 配置驗證完成 ===');
 }
@@ -1078,7 +1131,27 @@ function calculateResponsiveParameters() {
 }
 
 function getResponsiveTextSize() {
-    return cell * responsiveTextRatio;
+    // 根據cell大小和設備類型調整文字大小
+    const isMobile = windowWidth <= GAME_CONFIG.MOBILE_BREAKPOINT;
+    const isTablet = windowWidth > GAME_CONFIG.MOBILE_BREAKPOINT && windowWidth <= GAME_CONFIG.TABLET_BREAKPOINT;
+    
+    let textRatio;
+    if (isMobile) {
+        // 手機上使用較大的文字比例以確保可讀性
+        textRatio = cell <= 16 ? 0.8 : 0.75;
+    } else if (isTablet) {
+        textRatio = 0.7;
+    } else {
+        textRatio = 0.65; // 桌面使用較小比例
+    }
+    
+    const baseSize = cell * textRatio;
+    
+    // 確保文字大小在合理範圍內
+    const minSize = isMobile ? 10 : 12;
+    const maxSize = isMobile ? 24 : 20;
+    
+    return Math.max(minSize, Math.min(maxSize, baseSize));
 }
 
 function windowResized() {

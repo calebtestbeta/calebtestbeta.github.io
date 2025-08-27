@@ -103,7 +103,9 @@
         canvas {
             display: block;
             margin: 40px auto 88px auto;
-            box-shadow: 0 0 0 2px #013 inset
+            box-shadow: 0 0 0 2px #013 inset;
+            max-width: 100%;
+            height: auto;
         }
 
         #over {
@@ -559,6 +561,36 @@
         }
 
         /* 響應式設計 */
+        /* Canvas 響應式優化 */
+        @media (max-width: 320px) {
+            /* 超小螢幕 (iPhone SE等) */
+            canvas {
+                margin: 15px auto 180px auto;
+                max-width: calc(100vw - 10px);
+            }
+            
+            #pad {
+                width: 160px;
+                height: 160px;
+                bottom: 10px;
+            }
+        }
+        
+        @media (max-width: 375px) and (min-width: 321px) {
+            /* 小螢幕 (iPhone 12 mini等) */
+            canvas {
+                margin: 18px auto 190px auto;
+                max-width: calc(100vw - 15px);
+            }
+        }
+        
+        @media (max-width: 414px) and (min-width: 376px) {
+            /* 中等螢幕 (iPhone 11 Pro等) */
+            canvas {
+                margin: 20px auto 200px auto;
+            }
+        }
+        
         /* 額外小螢幕優化 */
         @media (max-height: 600px) {
             #start-screen {
@@ -617,7 +649,8 @@
             }
 
             canvas {
-                margin: 50px auto 250px auto;
+                margin: 20px auto 200px auto;
+                max-width: calc(100vw - 20px);
             }
 
             #list {
