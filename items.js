@@ -9,8 +9,8 @@ window.ITEMS = {
         "腿", "培", "腸", "炸",
         // 水果
         "蘋", "蕉", "瓜", "莓",
-        // 飲品
-        "茶", "咖"
+        // 飲品  
+        "茶", "咖", "可", "抹", "拿"
     ],
 
     effects: {
@@ -45,6 +45,20 @@ window.ITEMS = {
         "咖": {
             kind: "caff", speedMul: 1.25, durationMs: 1000,
             after: { speedMul: 0.98, durationMs: 5000 }
+        },
+        
+        // ===== 新增咖啡因飲品 =====
+        "拿": {
+            kind: "caff", speedMul: 1.10, durationMs: 2000,
+            after: { speedMul: 0.92, durationMs: 3500 }
+        },
+        "可": {
+            kind: "caff", speedMul: 1.15, durationMs: 1200,
+            after: { speedMul: 0.95, durationMs: 3000 }
+        },
+        "抹": {
+            kind: "caff", speedMul: 1.20, durationMs: 1800,
+            after: { speedMul: 0.90, durationMs: 4000 }
         }
     },
 
@@ -76,7 +90,12 @@ window.ITEMS = {
         "莓": { carb: 4, fiber: 8 },
 
         // 飲品
-        "茶": { carb: 2 },
-        "咖": { caffeine: 1, carb: 2 }
+        "茶": { caffeine: 0.3, carb: 0 },     // 純茶
+        "咖": { caffeine: 1, carb: 0 },       // 美式咖啡
+        "拿": { caffeine: 0.8, carb: 6, fat: 2 }, // 拿鐵
+        
+        // 其他咖啡因飲品
+        "可": { caffeine: 0.8, carb: 3 },     // 可樂類飲品
+        "抹": { caffeine: 0.6, carb: 1 }      // 抹茶類飲品
     }
 };
