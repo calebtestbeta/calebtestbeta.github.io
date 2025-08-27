@@ -216,9 +216,14 @@
             inset: 0;
             background: rgba(10, 170, 10, 0.95);
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
             z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px 0;
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
         }
 
         #start-card {
@@ -226,8 +231,12 @@
             border-radius: 20px;
             padding: 30px 25px;
             width: min(90%, 480px);
+            max-height: none;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin: auto 0;
+            flex-shrink: 0;
+            position: relative;
         }
 
         #start-card h1 {
@@ -419,11 +428,14 @@
             inset: 0;
             background: rgba(10, 170, 10, 0.95);
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
             z-index: 1000;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 20px;
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
         }
 
         #help-card {
@@ -547,6 +559,46 @@
         }
 
         /* 響應式設計 */
+        /* 額外小螢幕優化 */
+        @media (max-height: 600px) {
+            #start-screen {
+                padding: 5px 0;
+            }
+            
+            #start-card {
+                margin: 5px auto;
+                padding: 15px 10px;
+            }
+            
+            #start-card h1 {
+                font-size: 2em;
+                margin: 0 0 3px 0;
+            }
+            
+            #start-card h2 {
+                font-size: 1em;
+                margin: 0 0 15px 0;
+            }
+            
+            #instructions {
+                margin: 10px 0 15px 0;
+                padding: 10px;
+            }
+            
+            #difficulty-selector {
+                margin: 10px 0 15px 0;
+            }
+            
+            #font-notice {
+                margin: 10px 0 15px 0;
+            }
+            
+            #font-notice p {
+                padding: 8px;
+                font-size: 0.85em;
+            }
+        }
+        
         @media (max-width: 480px) {
             #hud {
                 font-size: 16px;
@@ -613,9 +665,14 @@
             }
 
             /* 手機版起始視窗 */
+            #start-screen {
+                padding: 10px 0;
+            }
+            
             #start-card {
-                padding: 25px 20px;
-                width: min(95%, 400px);
+                padding: 20px 15px;
+                width: min(95%, 350px);
+                margin: 10px auto;
             }
 
             #start-card h1 {
