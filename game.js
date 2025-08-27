@@ -293,7 +293,7 @@ function calculateOptimalCanvasSize() {
         // 手機：極小邊距，最大化利用螢幕空間
         horizontalPadding = windowWidth <= 375 ? 8 : 12; // iPhone SE使用8px，其他手機12px
         verticalReduction = windowHeight <= 667 ? 240 : 260; // 大幅減少垂直空間占用
-        maxCellSize = 40;  // 進一步增加手機最大cell大小
+        maxCellSize = 30;  // 進一步增加手機最大cell大小
         minCellSize = 14;  // 提高最小cell大小確保可讀性
     } else if (isTablet) {
         // 平板：適中邊距
