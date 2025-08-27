@@ -2,29 +2,29 @@
 const GAME_CONFIG = {
     // 固定網格設定
     GRID_COLS: 18,
-    GRID_ROWS: 36,
-    
+    GRID_ROWS: 25,
+
     // 遊戲核心參數
     DEFAULT_SPEED: 8,
     GAME_DURATION: 60,
     FOOD_CHANGE_INTERVAL: 5000,
     FRAME_RATE: 16,
-    
+
     // 食物系統配置
     INITIAL_FOOD_COUNT: 6,
     MAX_SPAWN_ATTEMPTS: 100,
     CAFFEINE_FOOD_PROBABILITY: 0.3,
-    
+
     // 響應式設計
     RESPONSIVE_TEXT_RATIO: 0.7,
     MOBILE_BREAKPOINT: 480,
     TABLET_BREAKPOINT: 768,
-    
+
     // 背景顏色配置
     DEFAULT_BACKGROUND_COLOR: [10, 160, 10],
     IOS_BACKGROUND_COLOR: [6, 199, 85],
     ANDROID_BACKGROUND_COLOR: [76, 199, 100],
-    
+
     // Canvas 邊距
     CANVAS_PADDING: 40
 };
@@ -45,21 +45,21 @@ let gameBackgroundColor = [...GAME_CONFIG.DEFAULT_BACKGROUND_COLOR];
 let previousScreen = 'START';
 let difficulty = 'easy';
 const DIFFICULTY_SETTINGS = {
-    easy: { 
-        name: '簡單', 
-        speedMultiplier: 0.7, 
+    easy: {
+        name: '簡單',
+        speedMultiplier: 0.7,
         description: '悠閒享受早餐時光',
         color: '#4CAF50'
     },
-    normal: { 
-        name: '普通', 
-        speedMultiplier: 1.0, 
+    normal: {
+        name: '普通',
+        speedMultiplier: 1.0,
         description: '正常早餐節奏',
         color: '#FF9800'
     },
-    hard: { 
-        name: '困難', 
-        speedMultiplier: 1.4, 
+    hard: {
+        name: '困難',
+        speedMultiplier: 1.4,
         description: '急忙趕早班的速度',
         color: '#F44336'
     }
@@ -71,22 +71,22 @@ const Utils = {
     clamp(value, min, max) {
         return Math.max(min, Math.min(max, value));
     },
-    
+
     // 隨機整數
     randomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     },
-    
+
     // 檢查位置是否在邊界內
     isValidPosition(x, y, cols, rows) {
         return x >= 0 && x < cols && y >= 0 && y < rows;
     },
-    
+
     // 檢查兩個位置是否相同
     isSamePosition(pos1, pos2) {
         return pos1.x === pos2.x && pos1.y === pos2.y;
     },
-    
+
     // 將十六進制顏色轉換為 RGB 陣列
     hexToRgb(hex) {
         const r = parseInt(hex.slice(1, 3), 16);
@@ -99,7 +99,7 @@ const Utils = {
 // DOM 元素管理器
 const DOMManager = {
     elements: {},
-    
+
     // 初始化時快取所有常用元素
     init() {
         this.elements = {
@@ -107,27 +107,27 @@ const DOMManager = {
             time: select('#time'),
             len: select('#len'),
             fontInfo: select('#font-info'),
-            
+
             // 畫面元素
             startScreen: select('#start-screen'),
             countdownScreen: select('#countdown-screen'),
             countdownNumber: select('#countdown-number'),
             helpScreen: select('#help-screen'),
             overScreen: select('#over'),
-            
+
             // 按鈕元素
             startButton: select('#start-button'),
             helpButton: select('#help-button'),
             helpFromEndButton: select('#help-from-end-button'),
             helpBackButton: select('#help-back-button'),
-            
+
             // 內容容器
             foodCategories: select('#food-categories'),
             list: select('#list'),
             report: select('#report'),
             nutritionChart: select('#nutritionChart')
         };
-        
+
         // 移除不存在的元素
         Object.keys(this.elements).forEach(key => {
             if (!this.elements[key]) {
@@ -136,12 +136,12 @@ const DOMManager = {
             }
         });
     },
-    
+
     // 安全獲取元素
     get(elementKey) {
         return this.elements[elementKey] || null;
     },
-    
+
     // 設定元素內容
     setContent(elementKey, content) {
         const element = this.get(elementKey);
@@ -149,7 +149,7 @@ const DOMManager = {
             element.html(content);
         }
     },
-    
+
     // 設定元素樣式
     setStyle(elementKey, property, value) {
         const element = this.get(elementKey);
@@ -157,12 +157,12 @@ const DOMManager = {
             element.style(property, value);
         }
     },
-    
+
     // 顯示/隱藏元素
     show(elementKey) {
         this.setStyle(elementKey, 'display', 'flex');
     },
-    
+
     hide(elementKey) {
         this.setStyle(elementKey, 'display', 'none');
     }
@@ -200,22 +200,22 @@ const FOOD_COLORS = {
 function getFoodType(char) {
     const nutrition = ITEMS.nutrition[char];
     if (!nutrition) return 'default';
-    
+
     // 咖啡因優先（特殊類型）
     if (nutrition.caffeine && nutrition.caffeine > 0) {
         return 'caffeine';
     }
-    
+
     // 比較蛋白質和碳水化合物
     const protein = nutrition.protein || 0;
     const carb = nutrition.carb || 0;
-    
+
     if (protein > carb) {
         return 'protein';
     } else if (carb > 0) {
         return 'carb';
     }
-    
+
     return 'default';
 }
 
@@ -223,13 +223,13 @@ function getFoodType(char) {
 function getFoodColor(char) {
     const type = getFoodType(char);
     const color = FOOD_COLORS[type] || FOOD_COLORS.default;
-    
+
     // 確保顏色物件完整
     if (!color || !color.background || !color.border || !color.text) {
         console.warn(`食物顏色不完整: char=${char}, type=${type}`, color);
         return FOOD_COLORS.default;
     }
-    
+
     return color;
 }
 
@@ -237,7 +237,7 @@ function getFoodColor(char) {
 function getWeightedFood() {
     // 定義咖啡因食物
     const caffeineFoods = ['茶', '咖', '拿', '可', '抹'];
-    
+
     // 使用配置中的咖啡因食物出現機率
     if (random() < GAME_CONFIG.CAFFEINE_FOOD_PROBABILITY) {
         return random(caffeineFoods);
@@ -265,18 +265,18 @@ function initializeCanvas() {
     const canvasSize = calculateOptimalCanvasSize();
     createCanvas(canvasSize.width, canvasSize.height);
     frameRate(GAME_CONFIG.FRAME_RATE);
-    
+
     // 立即設置初始背景顏色，防止顯示黑色
     if (gameBackgroundColor && gameBackgroundColor.length === 3) {
         background(gameBackgroundColor[0], gameBackgroundColor[1], gameBackgroundColor[2]);
     } else {
         background(10, 160, 10); // 預設綠色
     }
-    
+
     cell = canvasSize.cellSize;
     cols = GAME_CONFIG.GRID_COLS;
     rows = GAME_CONFIG.GRID_ROWS;
-    
+
     console.log(`Canvas初始化: ${canvasSize.width}x${canvasSize.height}, Cell大小: ${cell}, 網格: ${GAME_CONFIG.GRID_COLS}x${GAME_CONFIG.GRID_ROWS}`);
 }
 
@@ -285,10 +285,10 @@ function calculateOptimalCanvasSize() {
     const isMobile = windowWidth <= GAME_CONFIG.MOBILE_BREAKPOINT;
     const isTablet = windowWidth > GAME_CONFIG.MOBILE_BREAKPOINT && windowWidth <= GAME_CONFIG.TABLET_BREAKPOINT;
     const isDesktop = windowWidth > GAME_CONFIG.TABLET_BREAKPOINT;
-    
+
     // 根據設備類型設定邊距和可用空間
     let horizontalPadding, verticalReduction, maxCellSize, minCellSize;
-    
+
     if (isMobile) {
         // 手機：極小邊距，最大化利用螢幕空間
         horizontalPadding = windowWidth <= 375 ? 8 : 12; // iPhone SE使用8px，其他手機12px
@@ -308,13 +308,13 @@ function calculateOptimalCanvasSize() {
         maxCellSize = 28;
         minCellSize = 18;
     }
-    
+
     const availableWidth = windowWidth - (horizontalPadding * 2);
     const availableHeight = windowHeight - verticalReduction;
-    
+
     const cellSizeByWidth = Math.floor(availableWidth / GAME_CONFIG.GRID_COLS);
     const cellSizeByHeight = Math.floor(availableHeight / GAME_CONFIG.GRID_ROWS);
-    
+
     // 智能選擇cell大小：優先考慮充分利用螢幕寬度
     let optimalCellSize;
     if (isMobile) {
@@ -328,16 +328,16 @@ function calculateOptimalCanvasSize() {
         // 平板和桌面：平衡寬高比
         optimalCellSize = Math.min(cellSizeByWidth, cellSizeByHeight);
     }
-    
+
     // 確保cell大小在合理範圍內
     optimalCellSize = Math.max(minCellSize, Math.min(maxCellSize, optimalCellSize));
-    
+
     const canvasWidth = optimalCellSize * GAME_CONFIG.GRID_COLS;
     const canvasHeight = optimalCellSize * GAME_CONFIG.GRID_ROWS;
-    
+
     const deviceType = isMobile ? 'Mobile' : isTablet ? 'Tablet' : 'Desktop';
     const screenUtilization = ((canvasWidth / windowWidth) * 100).toFixed(1);
-    
+
     console.log(`Canvas計算 - 設備：${deviceType}`);
     console.log(`  視窗：${windowWidth}x${windowHeight}px`);
     console.log(`  邊距：H${horizontalPadding}px, V-${verticalReduction}px`);
@@ -345,7 +345,7 @@ function calculateOptimalCanvasSize() {
     console.log(`  Cell計算：寬度${cellSizeByWidth}px, 高度${cellSizeByHeight}px, 選用${optimalCellSize}px`);
     console.log(`  最終Canvas：${canvasWidth}x${canvasHeight}px`);
     console.log(`  螢幕寬度利用率：${screenUtilization}%`);
-    
+
     // 提供設備特定的優化建議和警告
     if (isMobile) {
         if (optimalCellSize < 16) {
@@ -353,14 +353,14 @@ function calculateOptimalCanvasSize() {
         } else if (optimalCellSize >= 25) {
             console.info('✅ 手機cell大小良好，遊戲體驗佳');
         }
-        
+
         if (screenUtilization < 80) {
             console.warn(`⚠️  螢幕寬度利用率偏低(${screenUtilization}%)，建議檢查邊距設置`);
         } else {
             console.info(`✅ 螢幕利用率良好(${screenUtilization}%)`);
         }
     }
-    
+
     return {
         width: canvasWidth,
         height: canvasHeight,
@@ -371,19 +371,19 @@ function calculateOptimalCanvasSize() {
 function initializeGameSettings() {
     gameFont = detectAndSetFont();
     setGameBackgroundColor();
-    
+
     // 確保背景顏色正確設置
     if (!gameBackgroundColor || gameBackgroundColor.length !== 3) {
         console.warn('背景顏色設置失敗，使用預設值');
         gameBackgroundColor = [10, 160, 10]; // 預設綠色
     }
-    
+
     // 立即應用背景顏色到Canvas
     background(gameBackgroundColor[0], gameBackgroundColor[1], gameBackgroundColor[2]);
-    
+
     console.log('使用字體：', gameFont);
     console.log('遊戲背景顏色設定：', gameBackgroundColor);
-    
+
     DOMManager.setContent('fontInfo', gameFont);
 }
 
@@ -401,7 +401,7 @@ function setupVirtualButtons() {
         { id: '#U', direction: 'UP' },
         { id: '#D', direction: 'DOWN' }
     ];
-    
+
     buttonMappings.forEach(({ id, direction }) => {
         const button = select(id);
         if (button) {
@@ -425,7 +425,7 @@ function handleKeyPress(event) {
         }
         return;
     }
-    
+
     // 方向鍵控制
     if (gameState === 'PLAYING' && !isPaused) {
         const keyDirectionMap = {
@@ -434,7 +434,7 @@ function handleKeyPress(event) {
             'ArrowUp': 'UP',
             'ArrowDown': 'DOWN'
         };
-        
+
         if (keyDirectionMap[event.key]) {
             event.preventDefault();
             changeDirection(keyDirectionMap[event.key]);
@@ -447,26 +447,26 @@ function setupGameButtons() {
     if (startButton) {
         startButton.mousePressed(startGame);
     }
-    
+
     setupHelpButtons();
 }
 
 function setup() {
     try {
         if (!initializeDependencies()) return;
-        
+
         // 強制初始背景顏色設置
         console.log('Setup開始 - 強制設置初始背景');
         if (!gameBackgroundColor || gameBackgroundColor.length !== 3) {
             gameBackgroundColor = [10, 160, 10]; // 強制預設值
         }
-        
+
         DOMManager.init();
         initializeCanvas();
         initializeGameSettings();
         resetGame();
         setupControls();
-        
+
         // 在setup最後繪製一次背景，然後暫停等待用戶點擊開始
         // 確保初始背景顏色正確顯示
         if (gameBackgroundColor && gameBackgroundColor.length === 3) {
@@ -474,15 +474,15 @@ function setup() {
         } else {
             background(10, 160, 10); // 預設綠色
         }
-        
+
         // 繪製邊框
-        noFill(); 
-        stroke(0); 
+        noFill();
+        stroke(0);
         strokeWeight(2);
         rect(0, 0, cols * cell, rows * cell);
-        
+
         noLoop();
-        
+
         console.log('遊戲初始化完成');
         validateGameConfig();
         logColorVerification();
@@ -495,10 +495,10 @@ function logColorVerification() {
     console.log('=== 蛋白質顏色驗證 ===');
     console.log('新的蛋白質顏色設定：', FOOD_COLORS.protein);
     console.log('蛋白質食物顏色測試：', getFoodColor('蛋'));
-    
+
     console.log('=== 背景顏色驗證 ===');
     console.log('當前背景顏色設定：', gameBackgroundColor);
-    
+
     // 強制驗證背景顏色
     if (!gameBackgroundColor || gameBackgroundColor.length !== 3) {
         console.error('❌ 背景顏色設定錯誤，立即修正');
@@ -513,14 +513,14 @@ function logColorVerification() {
 // 驗證配置常數是否正確載入
 function validateGameConfig() {
     console.log('=== 遊戲配置驗證 ===');
-    
+
     const requiredConfigs = [
         'GRID_COLS', 'GRID_ROWS', 'DEFAULT_SPEED', 'GAME_DURATION', 'FOOD_CHANGE_INTERVAL',
         'RESPONSIVE_TEXT_RATIO', 'DEFAULT_BACKGROUND_COLOR', 'FRAME_RATE',
         'INITIAL_FOOD_COUNT', 'MAX_SPAWN_ATTEMPTS', 'CAFFEINE_FOOD_PROBABILITY',
         'MOBILE_BREAKPOINT', 'TABLET_BREAKPOINT', 'CANVAS_PADDING'
     ];
-    
+
     requiredConfigs.forEach(config => {
         if (GAME_CONFIG[config] !== undefined) {
             console.log(`✓ ${config}: ${GAME_CONFIG[config]}`);
@@ -528,20 +528,20 @@ function validateGameConfig() {
             console.error(`✗ 缺少配置: ${config}`);
         }
     });
-    
+
     // 驗證響應式畫布配置
     console.log('=== 響應式畫布配置驗證 ===');
     const canvasSize = calculateOptimalCanvasSize();
     console.log(`✓ 計算出的畫布大小: ${canvasSize.width}x${canvasSize.height}`);
     console.log(`✓ Cell 大小: ${canvasSize.cellSize}px`);
     console.log(`✓ 文字大小: ${getResponsiveTextSize()}px`);
-    
+
     // 驗證設備檢測
     const isMobile = windowWidth <= GAME_CONFIG.MOBILE_BREAKPOINT;
     const isTablet = windowWidth > GAME_CONFIG.MOBILE_BREAKPOINT && windowWidth <= GAME_CONFIG.TABLET_BREAKPOINT;
     const deviceType = isMobile ? 'Mobile' : isTablet ? 'Tablet' : 'Desktop';
     console.log(`✓ 設備類型: ${deviceType} (視窗: ${windowWidth}x${windowHeight})`);
-    
+
     console.log('=== 配置驗證完成 ===');
 }
 
@@ -552,7 +552,7 @@ function startGame() {
     // 顯示倒數視窗
     DOMManager.show('countdownScreen');
     DOMManager.setContent('countdownNumber', 3);
-    
+
     let count = 3;
     let countdownInterval = setInterval(() => {
         count--;
@@ -571,7 +571,7 @@ function startGame() {
             console.log('遊戲開始！');
         }
     }, 1000);
-    
+
     // 如果找不到倒數視窗元素則直接開始
     if (!DOMManager.get('countdownScreen') || !DOMManager.get('countdownNumber')) {
         gameState = 'PLAYING';
@@ -586,16 +586,16 @@ function startGame() {
 function resetGame() {
     // 隨機選擇初始方向
     dir = getRandomDirection();
-    
+
     // 計算遊戲區域中心位置並初始化蛇的位置
     initializeSnake();
-    
+
     // 重置遊戲狀態
     resetGameState();
-    
+
     // 初始化食物
     initializeFoods();
-    
+
     console.log(`遊戲重置 - 網格: ${cols}x${rows}, 初始方向: ${dir}, 蛇頭位置: (${snake[0].x}, ${snake[0].y}), 蛇身位置: (${snake[1].x}, ${snake[1].y})`);
 }
 
@@ -634,7 +634,7 @@ function draw() {
             gameBackgroundColor = [10, 160, 10]; // 直接設置預設值
             setGameBackgroundColor(); // 嘗試重新設置
         }
-        
+
         // 設置背景顏色
         if (gameBackgroundColor && gameBackgroundColor.length === 3) {
             background(gameBackgroundColor[0], gameBackgroundColor[1], gameBackgroundColor[2]);
@@ -644,7 +644,7 @@ function draw() {
             gameBackgroundColor = [10, 160, 10]; // 確保變數同步
             console.warn('使用最終預設背景顏色');
         }
-        
+
         // 僅在前10幀顯示調試信息
         if (frameCount <= 10) {
             console.log('Frame', frameCount, '背景顏色:', gameBackgroundColor);
@@ -686,13 +686,13 @@ function draw() {
             foods.forEach(f => {
                 if (f && typeof f.x === 'number' && typeof f.y === 'number' && f.char) {
                     const foodColor = getFoodColor(f.char);
-                    
+
                     // 繪製食物背景（帶顏色）
                     fill(foodColor.background);
                     stroke(foodColor.border);
                     strokeWeight(2);
                     rect(f.x * cell + 1, f.y * cell + 1, cell - 2, cell - 2, 4);
-                    
+
                     // 繪製食物文字
                     fill(foodColor.text);
                     noStroke();
@@ -732,13 +732,13 @@ function draw() {
                             const char = collectedChars[charIndex];
                             const charType = collectedCharTypes[charIndex];
                             const foodColor = FOOD_COLORS[charType] || FOOD_COLORS.default;
-                            
+
                             // 繪製蛇身背景（帶顏色）
                             fill(foodColor.background);
                             stroke(foodColor.border);
                             strokeWeight(1);
                             rect(s.x * cell + 1, s.y * cell + 1, cell - 2, cell - 2, 2);
-                            
+
                             // 繪製字詞
                             fill(foodColor.text);
                             noStroke();
@@ -764,14 +764,14 @@ function draw() {
 
 function stepForward() {
     const newHead = calculateNewHeadPosition();
-    
+
     if (isCollision(newHead)) {
         gameOver();
         return;
     }
 
     snake.unshift(newHead);
-    
+
     const eatenFood = checkFoodCollision(newHead);
     if (eatenFood) {
         handleFoodConsumption(eatenFood);
@@ -782,18 +782,18 @@ function stepForward() {
 
 function calculateNewHeadPosition() {
     const head = { ...snake[0] };
-    
+
     const movementMap = {
         'UP': { x: 0, y: -1 },
         'DOWN': { x: 0, y: 1 },
         'LEFT': { x: -1, y: 0 },
         'RIGHT': { x: 1, y: 0 }
     };
-    
+
     const movement = movementMap[dir];
     head.x += movement.x;
     head.y += movement.y;
-    
+
     return head;
 }
 
@@ -802,38 +802,38 @@ function isCollision(position) {
     if (!Utils.isValidPosition(position.x, position.y, cols, rows)) {
         return true;
     }
-    
+
     // 檢查自身碰撞（排除蛇頭）
-    return snake.slice(1).some(segment => 
+    return snake.slice(1).some(segment =>
         Utils.isSamePosition(position, segment)
     );
 }
 
 function checkFoodCollision(position) {
-    const foodIndex = foods.findIndex(food => 
+    const foodIndex = foods.findIndex(food =>
         Utils.isSamePosition(position, food)
     );
-    
+
     if (foodIndex !== -1) {
         const food = foods[foodIndex];
         foods.splice(foodIndex, 1);
         return food;
     }
-    
+
     return null;
 }
 
 function handleFoodConsumption(food) {
     const char = food.char;
     const foodType = getFoodType(char);
-    
+
     // 記錄收集到的食物
     collectedChars.push(char);
     collectedCharTypes.push(foodType);
-    
+
     // 生成新食物
     spawnFood();
-    
+
     // 應用食物效果
     onEat(char);
 }
@@ -858,7 +858,7 @@ function onEat(ch) {
         applyMul({ speedMul: fx.speedMul, durationMs: fx.durationMs });
         if (fx.after) postEffect = fx.after;
     }
-    
+
     // 調試信息：記錄咖啡因食物的攝取
     if (['拿', '可', '抹'].includes(ch)) {
         console.log(`吃到咖啡因食物: ${ch}, 類型: ${getFoodType(ch)}, 咖啡因總量: ${stat.caffeine || 0}`);
@@ -924,7 +924,7 @@ function changeDirection(newDirection) {
     // 防止反方向移動的映射
     const oppositeDirections = {
         'UP': 'DOWN',
-        'DOWN': 'UP', 
+        'DOWN': 'UP',
         'LEFT': 'RIGHT',
         'RIGHT': 'LEFT'
     };
@@ -939,7 +939,7 @@ function gameOver() {
     noLoop();
     gameState = 'OVER';
     isPaused = false; // 重置暫停狀態
-    
+
     try {
         // 安全地分析結果
         let tag, msg;
@@ -954,7 +954,7 @@ function gameOver() {
             else if (p > c) tag = "highProtein";
             else if (c > p) tag = "highCarb";
             else tag = "balanced";
-            
+
             msg = Ending.line(tag);
         }
 
@@ -966,14 +966,14 @@ function gameOver() {
                 const b = document.createElement('span');
                 b.className = 'chip';
                 b.textContent = ch;
-                
+
                 // 根據食物類型設定顏色
                 const foodType = getFoodType(ch);
                 const foodColor = getFoodColor(ch); // 使用getFoodColor確保安全
                 b.style.backgroundColor = foodColor.background;
                 b.style.border = `2px solid ${foodColor.border}`;
                 b.style.color = foodColor.text;
-                
+
                 listEl.appendChild(b);
             });
         }
@@ -1163,7 +1163,7 @@ function getResponsiveTextSize() {
     // 根據cell大小和設備類型調整文字大小
     const isMobile = windowWidth <= GAME_CONFIG.MOBILE_BREAKPOINT;
     const isTablet = windowWidth > GAME_CONFIG.MOBILE_BREAKPOINT && windowWidth <= GAME_CONFIG.TABLET_BREAKPOINT;
-    
+
     let textRatio;
     if (isMobile) {
         // 手機上使用較大的文字比例以確保可讀性
@@ -1173,13 +1173,13 @@ function getResponsiveTextSize() {
     } else {
         textRatio = 0.65; // 桌面使用較小比例
     }
-    
+
     const baseSize = cell * textRatio;
-    
+
     // 確保文字大小在合理範圍內
     const minSize = isMobile ? 10 : 12;
     const maxSize = isMobile ? 24 : 20;
-    
+
     return Math.max(minSize, Math.min(maxSize, baseSize));
 }
 
@@ -1192,10 +1192,10 @@ function windowResized() {
         // 重新計算Canvas大小和cell大小
         const canvasSize = calculateOptimalCanvasSize();
         resizeCanvas(canvasSize.width, canvasSize.height);
-        
+
         // 更新cell大小（網格大小保持固定）
         cell = canvasSize.cellSize;
-        
+
         console.log(`視窗大小改變: ${windowWidth}x${windowHeight}, Canvas: ${canvasSize.width}x${canvasSize.height}, Cell: ${cell}, 網格: ${cols}x${rows}（固定）`);
 
         // 檢查並修正遊戲物件位置（如果需要）
@@ -1278,9 +1278,9 @@ function getInitialSnakePosition(direction, centerX, centerY) {
     const minDistance = 2;
     const safeX = Math.max(minDistance, Math.min(centerX, cols - minDistance - 1));
     const safeY = Math.max(minDistance, Math.min(centerY, rows - minDistance - 1));
-    
+
     let head, body;
-    
+
     switch (direction) {
         case 'UP':
             // 向上移動：蛇身在蛇頭下方
@@ -1304,11 +1304,11 @@ function getInitialSnakePosition(direction, centerX, centerY) {
             body = { x: safeX - 1, y: safeY };
             break;
     }
-    
+
     // 雙重檢查：確保蛇的所有部分都在遊戲邊界內
     const validHead = head.x >= 0 && head.x < cols && head.y >= 0 && head.y < rows;
     const validBody = body.x >= 0 && body.x < cols && body.y >= 0 && body.y < rows;
-    
+
     if (!validHead || !validBody) {
         console.warn(`初始位置警告: 方向=${direction}, 蛇頭=(${head.x},${head.y}), 蛇身=(${body.x},${body.y}), 網格大小=(${cols},${rows})`);
         // 如果計算出的位置無效，回到更安全的中心位置
@@ -1319,16 +1319,16 @@ function getInitialSnakePosition(direction, centerX, centerY) {
             { x: Math.max(0, fallbackX - 1), y: fallbackY }
         ];
     }
-    
+
     return [head, body];
 }
 
 // 暫停功能相關函數
 function togglePause() {
     if (gameState !== 'PLAYING') return;
-    
+
     isPaused = !isPaused;
-    
+
     if (isPaused) {
         pauseGame();
     } else {
@@ -1338,14 +1338,14 @@ function togglePause() {
 
 function pauseGame() {
     if (gameState !== 'PLAYING') return;
-    
+
     noLoop();
     console.log('遊戲已暫停 - 按P鍵繼續');
 }
 
 function resumeGame() {
     if (gameState !== 'PLAYING') return;
-    
+
     loop();
     console.log('遊戲已繼續');
 }
@@ -1357,29 +1357,29 @@ function getGamePausedState() {
 function setupDifficultySelector() {
     // 獲取所有難度按鈕
     const difficultyButtons = document.querySelectorAll('.difficulty-btn');
-    
+
     // 設定預設選中簡單難度
     const defaultButton = document.querySelector('[data-difficulty="easy"]');
     if (defaultButton) {
         defaultButton.classList.add('selected');
     }
-    
+
     // 為每個按鈕添加點擊事件
     difficultyButtons.forEach(button => {
         button.addEventListener('click', () => {
             // 移除所有按鈕的選中狀態
             difficultyButtons.forEach(btn => btn.classList.remove('selected'));
-            
+
             // 設定當前按鈕為選中狀態
             button.classList.add('selected');
-            
+
             // 更新難度設定
             difficulty = button.getAttribute('data-difficulty');
-            
+
             console.log(`難度已變更為: ${DIFFICULTY_SETTINGS[difficulty].name}`);
         });
     });
-    
+
     console.log('難度選擇器初始化完成，預設難度：簡單');
 }
 
@@ -1389,22 +1389,22 @@ function setGameBackgroundColor() {
         // 檢查是否有全域的裝置檢測結果
         if (typeof window.detectDeviceAndSetBackground === 'function') {
             const deviceInfo = window.detectDeviceAndSetBackground();
-            
+
             // 將十六進制顏色轉換為 RGB
             const hexColor = deviceInfo.backgroundColor;
             const r = parseInt(hexColor.slice(1, 3), 16);
             const g = parseInt(hexColor.slice(3, 5), 16);
             const b = parseInt(hexColor.slice(5, 7), 16);
-            
+
             gameBackgroundColor = [r, g, b];
-            
+
             console.log(`遊戲背景顏色已設置為: RGB(${r}, ${g}, ${b}) - 裝置類型: ${deviceInfo.deviceType}`);
         } else {
             // 回退到手動檢測
             console.log('window.detectDeviceAndSetBackground 不可用，使用手動檢測');
             const userAgent = navigator.userAgent.toLowerCase();
             let r = 10, g = 160, b = 10; // 預設顏色
-            
+
             if (/iphone|ipad|ipod/.test(userAgent)) {
                 // iOS: #06C755
                 r = 6; g = 199; b = 85;
@@ -1412,7 +1412,7 @@ function setGameBackgroundColor() {
                 // Android: #4CC764
                 r = 76; g = 199; b = 100;
             }
-            
+
             gameBackgroundColor = [r, g, b];
             console.log(`遊戲背景顏色已設置為: RGB(${r}, ${g}, ${b}) - 手動檢測`);
         }
@@ -1436,7 +1436,7 @@ function setupHelpButtons() {
     } else {
         console.warn('找不到說明頁按鈕元素 #help-button');
     }
-    
+
     // 從結束頁進入說明頁
     const helpFromEndButton = select('#help-from-end-button');
     if (helpFromEndButton) {
@@ -1447,7 +1447,7 @@ function setupHelpButtons() {
     } else {
         console.warn('找不到結束頁說明按鈕元素 #help-from-end-button');
     }
-    
+
     // 返回按鈕
     const helpBackButton = select('#help-back-button');
     if (helpBackButton) {
@@ -1460,16 +1460,16 @@ function setupHelpButtons() {
 // 顯示說明頁
 function showHelpScreen() {
     console.log(`顯示說明頁，上一頁：${previousScreen}`);
-    
+
     // 隱藏所有其他畫面
     const startScreen = select('#start-screen');
     const overScreen = select('#over');
     if (startScreen) startScreen.style('display', 'none');
     if (overScreen) overScreen.style('display', 'none');
-    
+
     // 生成食物說明內容
     generateFoodHelp();
-    
+
     // 顯示說明頁
     const helpScreen = select('#help-screen');
     if (helpScreen) {
@@ -1480,12 +1480,12 @@ function showHelpScreen() {
 // 隱藏說明頁，返回上一頁
 function hideHelpScreen() {
     console.log(`隱藏說明頁，返回：${previousScreen}`);
-    
+
     const helpScreen = select('#help-screen');
     if (helpScreen) {
         helpScreen.style('display', 'none');
     }
-    
+
     // 根據上一頁顯示對應畫面
     if (previousScreen === 'START') {
         const startScreen = select('#start-screen');
@@ -1507,10 +1507,10 @@ function generateFoodHelp() {
         console.warn('無法生成食物說明：容器或 ITEMS 資料不存在');
         return;
     }
-    
+
     // 清空現有內容
     categoriesContainer.html('');
-    
+
     // 食物分類
     const categories = {
         carb: {
@@ -1539,39 +1539,39 @@ function generateFoodHelp() {
             description: '平衡營養，提供穩定能量'
         }
     };
-    
+
     // 為每個分類創建 HTML
     Object.entries(categories).forEach(([key, category]) => {
         const categoryDiv = createDiv('');
         categoryDiv.addClass('food-category');
-        
+
         const title = createElement('h4', category.name);
         categoryDiv.child(title);
-        
+
         const itemsDiv = createDiv('');
         itemsDiv.addClass('food-items');
-        
+
         category.items.forEach(char => {
             const itemDiv = createDiv('');
             itemDiv.addClass('food-item');
-            
+
             // 根據食物類型設置顏色
             const foodType = getFoodType(char);
             const foodColor = FOOD_COLORS[foodType];
             itemDiv.style('background-color', foodColor.background);
             itemDiv.style('border', `2px solid ${foodColor.border}`);
             itemDiv.style('color', foodColor.text);
-            
+
             // 添加字符和效果說明
             const charSpan = createSpan(char);
             charSpan.addClass('char');
             itemDiv.child(charSpan);
-            
+
             // 獲取效果資訊
             const effect = ITEMS.effects[char];
             const nutrition = ITEMS.nutrition[char];
             let effectText = '';
-            
+
             if (effect) {
                 if (effect.speedMul > 1) {
                     effectText = '加速';
@@ -1581,23 +1581,23 @@ function generateFoodHelp() {
                     effectText = '穩定';
                 }
             }
-            
+
             if (effectText) {
                 const effectSpan = createSpan(effectText);
                 itemDiv.child(effectSpan);
             }
-            
+
             itemsDiv.child(itemDiv);
         });
-        
+
         categoryDiv.child(itemsDiv);
-        
+
         const descDiv = createDiv(category.description);
         descDiv.addClass('category-desc');
         categoryDiv.child(descDiv);
-        
+
         categoriesContainer.child(categoryDiv);
     });
-    
+
     console.log('食物說明內容已生成');
 }
