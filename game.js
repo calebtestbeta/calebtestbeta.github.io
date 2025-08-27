@@ -290,23 +290,23 @@ function calculateOptimalCanvasSize() {
     let horizontalPadding, verticalReduction, maxCellSize, minCellSize;
     
     if (isMobile) {
-        // 手機：更小的邊距，更大的可用空間
-        horizontalPadding = 20;
-        verticalReduction = windowHeight <= 667 ? 280 : 320; // iPhone SE vs 標準手機
-        maxCellSize = 32;  // 增加手機最大cell大小
-        minCellSize = 12;  // 設定最小cell大小
+        // 手機：極小邊距，最大化利用螢幕空間
+        horizontalPadding = windowWidth <= 375 ? 8 : 12; // iPhone SE使用8px，其他手機12px
+        verticalReduction = windowHeight <= 667 ? 240 : 260; // 大幅減少垂直空間占用
+        maxCellSize = 40;  // 進一步增加手機最大cell大小
+        minCellSize = 14;  // 提高最小cell大小確保可讀性
     } else if (isTablet) {
-        // 平板
-        horizontalPadding = 30;
-        verticalReduction = 200;
-        maxCellSize = 28;
-        minCellSize = 14;
-    } else {
-        // 桌面
-        horizontalPadding = GAME_CONFIG.CANVAS_PADDING;
+        // 平板：適中邊距
+        horizontalPadding = 20;
         verticalReduction = 180;
-        maxCellSize = 25;
+        maxCellSize = 32;
         minCellSize = 16;
+    } else {
+        // 桌面：標準邊距
+        horizontalPadding = GAME_CONFIG.CANVAS_PADDING;
+        verticalReduction = 160;
+        maxCellSize = 28;
+        minCellSize = 18;
     }
     
     const availableWidth = windowWidth - (horizontalPadding * 2);
@@ -315,21 +315,50 @@ function calculateOptimalCanvasSize() {
     const cellSizeByWidth = Math.floor(availableWidth / GAME_CONFIG.GRID_COLS);
     const cellSizeByHeight = Math.floor(availableHeight / GAME_CONFIG.GRID_ROWS);
     
+    // 智能選擇cell大小：優先考慮充分利用螢幕寬度
+    let optimalCellSize;
+    if (isMobile) {
+        // 手機：優先使用寬度計算，確保充分利用螢幕寬度
+        optimalCellSize = Math.min(cellSizeByWidth, cellSizeByHeight);
+        // 如果寬度能提供更大的cell但仍在合理範圍內，優先考慮寬度
+        if (cellSizeByWidth <= maxCellSize && cellSizeByWidth > optimalCellSize) {
+            optimalCellSize = cellSizeByWidth;
+        }
+    } else {
+        // 平板和桌面：平衡寬高比
+        optimalCellSize = Math.min(cellSizeByWidth, cellSizeByHeight);
+    }
+    
     // 確保cell大小在合理範圍內
-    let optimalCellSize = Math.min(cellSizeByWidth, cellSizeByHeight);
     optimalCellSize = Math.max(minCellSize, Math.min(maxCellSize, optimalCellSize));
     
     const canvasWidth = optimalCellSize * GAME_CONFIG.GRID_COLS;
     const canvasHeight = optimalCellSize * GAME_CONFIG.GRID_ROWS;
     
     const deviceType = isMobile ? 'Mobile' : isTablet ? 'Tablet' : 'Desktop';
-    console.log(`Canvas計算 - 設備：${deviceType}, 視窗：${windowWidth}x${windowHeight}, Cell：${optimalCellSize}px, Canvas：${canvasWidth}x${canvasHeight}px`);
+    const screenUtilization = ((canvasWidth / windowWidth) * 100).toFixed(1);
     
-    // 提供設備特定的優化建議
-    if (isMobile && optimalCellSize < 14) {
-        console.warn('⚠️  手機螢幕 cell 大小較小，建議檢查是否會影響遊戲體驗');
-    } else if (optimalCellSize > 30) {
-        console.info('ℹ️  大螢幕設備，cell 大小較大，遊戲顯示效果佳');
+    console.log(`Canvas計算 - 設備：${deviceType}`);
+    console.log(`  視窗：${windowWidth}x${windowHeight}px`);
+    console.log(`  邊距：H${horizontalPadding}px, V-${verticalReduction}px`);
+    console.log(`  可用空間：${availableWidth}x${availableHeight}px`);
+    console.log(`  Cell計算：寬度${cellSizeByWidth}px, 高度${cellSizeByHeight}px, 選用${optimalCellSize}px`);
+    console.log(`  最終Canvas：${canvasWidth}x${canvasHeight}px`);
+    console.log(`  螢幕寬度利用率：${screenUtilization}%`);
+    
+    // 提供設備特定的優化建議和警告
+    if (isMobile) {
+        if (optimalCellSize < 16) {
+            console.warn('⚠️  手機cell大小偏小，可能影響操作體驗');
+        } else if (optimalCellSize >= 25) {
+            console.info('✅ 手機cell大小良好，遊戲體驗佳');
+        }
+        
+        if (screenUtilization < 80) {
+            console.warn(`⚠️  螢幕寬度利用率偏低(${screenUtilization}%)，建議檢查邊距設置`);
+        } else {
+            console.info(`✅ 螢幕利用率良好(${screenUtilization}%)`);
+        }
     }
     
     return {

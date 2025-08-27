@@ -106,6 +106,9 @@
             box-shadow: 0 0 0 2px #013 inset;
             max-width: 100%;
             height: auto;
+            image-rendering: pixelated; /* 確保像素完美顯示 */
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
         }
 
         #over {
@@ -561,33 +564,87 @@
         }
 
         /* 響應式設計 */
-        /* Canvas 響應式優化 */
+        /* Canvas 響應式優化 - 針對不同iPhone機型 */
+        
+        /* iPhone SE (320x568) - 最小螢幕 */
         @media (max-width: 320px) {
-            /* 超小螢幕 (iPhone SE等) */
             canvas {
-                margin: 15px auto 180px auto;
-                max-width: calc(100vw - 10px);
+                margin: 8px auto 150px auto;
+                max-width: calc(100vw - 16px);
+            }
+            
+            #pad {
+                width: 150px;
+                height: 150px;
+                bottom: 8px;
+            }
+            
+            #hud {
+                padding: 3px 0;
+                gap: 6px;
+                font-size: 14px;
+            }
+        }
+        
+        /* iPhone 12 mini, iPhone 13 mini (375x812) */
+        @media (max-width: 375px) and (min-width: 321px) {
+            canvas {
+                margin: 8px auto 160px auto;
+                max-width: calc(100vw - 16px);
             }
             
             #pad {
                 width: 160px;
                 height: 160px;
+                bottom: 8px;
+            }
+            
+            #hud {
+                padding: 4px 0;
+                gap: 8px;
+                font-size: 15px;
+            }
+        }
+        
+        /* iPhone 12, iPhone 13, iPhone 14 (390x844) */
+        @media (max-width: 390px) and (min-width: 376px) {
+            canvas {
+                margin: 10px auto 165px auto;
+                max-width: calc(100vw - 20px);
+            }
+            
+            #pad {
+                width: 165px;
+                height: 165px;
                 bottom: 10px;
             }
         }
         
-        @media (max-width: 375px) and (min-width: 321px) {
-            /* 小螢幕 (iPhone 12 mini等) */
+        /* iPhone 14 Plus, iPhone 12 Pro Max (428x926) */
+        @media (max-width: 428px) and (min-width: 391px) {
             canvas {
-                margin: 18px auto 190px auto;
-                max-width: calc(100vw - 15px);
+                margin: 12px auto 170px auto;
+                max-width: calc(100vw - 24px);
+            }
+            
+            #pad {
+                width: 170px;
+                height: 170px;
+                bottom: 12px;
             }
         }
         
-        @media (max-width: 414px) and (min-width: 376px) {
-            /* 中等螢幕 (iPhone 11 Pro等) */
+        /* 其他手機設備 */
+        @media (max-width: 480px) and (min-width: 429px) {
             canvas {
-                margin: 20px auto 200px auto;
+                margin: 12px auto 175px auto;
+                max-width: calc(100vw - 24px);
+            }
+            
+            #pad {
+                width: 175px;
+                height: 175px;
+                bottom: 12px;
             }
         }
         
@@ -635,23 +692,14 @@
             #hud {
                 font-size: 16px;
                 gap: 8px;
-                padding: 8px 0;
-            }
-
-            #pad {
-                width: 190px;
-                height: 190px;
-                bottom: 15px;
+                padding: 6px 0;
             }
 
             #pad button {
-                font-size: 24px;
+                font-size: 22px;
             }
 
-            canvas {
-                margin: 20px auto 200px auto;
-                max-width: calc(100vw - 20px);
-            }
+            /* Canvas設定在上面的特定media query中處理 */
 
             #list {
                 font-size: 20px;
