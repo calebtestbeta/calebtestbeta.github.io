@@ -102,10 +102,14 @@
 
         canvas {
             display: block;
-            margin: 40px auto 88px auto;
-            box-shadow: 0 0 0 2px #013 inset;
             max-width: 100%;
             height: auto;
+        }
+        
+        /* 遊戲畫布特定樣式 */
+        canvas:not(#nutritionChart) {
+            margin: 40px auto 88px auto;
+            box-shadow: 0 0 0 2px #013 inset;
             image-rendering: pixelated; /* 確保像素完美顯示 */
             image-rendering: -moz-crisp-edges;
             image-rendering: crisp-edges;
@@ -207,12 +211,13 @@
             margin-right: 8px;
         }
 
-        /* 營養圖表樣式 */
+        /* 營養圓餅圖樣式 */
         #nutritionChart {
-            max-width: 300px;
-            max-height: 300px;
+            max-width: 280px;
+            max-height: 280px;
+            width: 100%;
             margin: 20px auto;
-            display: block;
+            background: transparent;
         }
 
         /* 起始視窗樣式 */
@@ -797,6 +802,13 @@
             #card button {
                 font-size: 1.2em;
                 padding: 12px 25px;
+            }
+            
+            /* 手機版圓餅圖優化 */
+            #nutritionChart {
+                max-width: 240px;
+                max-height: 240px;
+                margin: 15px auto;
             }
 
             /* 手機版起始視窗 */
